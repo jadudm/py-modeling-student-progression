@@ -1,5 +1,6 @@
 import attr
 import typing
+import structures as S
 
 # Constraints are essentially a language.
 # However, Python does not have a way to implement
@@ -17,25 +18,42 @@ class NoCourseLevelConstraint (Constraint):
 
 @attr.s
 class HasCourseLevelConstraint (Constraint):
-  course_level = attr.ib(type=int)
-  requires     = attr.ib(type=int)
+  course_level   = attr.ib(type=int)
+  required_level = attr.ib(type=int)
 
 @attr.s
 class SequenceConstraint (Constraint):
-  sequence = attr.ib(type=typing.List[str])
+  sequence = attr.ib(type=typing.List[S.Course])
 
 @attr.s
 class OneOfConstraint (Constraint):
   course = attr.ib(type=str)
-  course_set = attr.ib(type=typing.List[str])
+  course_set = attr.ib(type=typing.List[S.Course])
 
 @attr.s
 class AnyOfConstraint (Constraint):
   course = attr.ib(type=str)
-  course_set = attr.ib(type=typing.List[str])
+  course_set = attr.ib(type=typing.List[S.Course])
 
 @attr.s
 class LimitOfConstraint (Constraint):
   count = attr.ib(type=int)
-  course_set = attr.ib(type=typing.List[str])
-  
+  course_set = attr.ib(type=typing.List[S.Course])
+
+# Returns a boolean
+def interp(constraint, course_set, desired_course):
+  # NoCourseLevelConstraint
+  if isinstance(constraint, NoCourseLevelConstraint):
+    return (desired_course.level == constraint.course_level)
+  # HasCourseLevelConstraint
+  elif isinstance(constraint, HasCourseLevelConstraint):
+    meets_constraint = False
+    if desired_course.level == constraint.course_level:
+      for c in course_set:
+        if c.level == constraint.required_level:
+          meets_constraint = True
+    return meets_constraint
+  else:
+    # If I find no reason to limit enrollment, then
+    # it's OK based on the constraints.
+    return True
