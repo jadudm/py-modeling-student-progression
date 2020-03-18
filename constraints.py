@@ -27,12 +27,10 @@ class SequenceConstraint (Constraint):
 
 @attr.s
 class OneOfConstraint (Constraint):
-  course = attr.ib(type=str)
   course_set = attr.ib(type=typing.List[S.Course])
 
 @attr.s
 class AnyOfConstraint (Constraint):
-  course = attr.ib(type=str)
   course_set = attr.ib(type=typing.List[S.Course])
 
 @attr.s
@@ -53,6 +51,24 @@ def interp(constraint, course_set, desired_course):
         if c.level == constraint.required_level:
           meets_constraint = True
     return meets_constraint
+  # SequenceConstraint
+  elif isinstance(constraint, SequenceConstraint):
+    all_in = True
+    for constc in constraint.sequence:
+      constr_in_set = False
+      for setc in course_set:
+        if constc.get_id() == setc.get_id():
+          constr_in_set = True
+      all_in = all_in and constr_in_set
+    return all_in
+  elif isinstance(constraint, OneOfConstraint):
+    member = False
+    for c in course_set:
+      for cc in constraint.course_set:
+        if c.get_id() ==  cc.get_id():
+          member = True
+    return member
+
   else:
     # If I find no reason to limit enrollment, then
     # it's OK based on the constraints.
