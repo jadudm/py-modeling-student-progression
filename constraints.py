@@ -1,6 +1,6 @@
 import attr
 import typing
-import structures as S
+import course as CO
 
 @attr.s
 class Constraint (object):
@@ -41,8 +41,8 @@ class HasCourseLevelConstraint (Constraint):
 class SequenceConstraint (Constraint):
   """To take the desired course, students must have taken all of the courses
   in the sequence prior."""
-  target   = attr.ib(type=S.Course)
-  sequence = attr.ib(type=typing.List[S.Course])
+  target   = attr.ib(type=CO.Course)
+  sequence = attr.ib(type=typing.List[CO.Course])
   def check(constraint, course_set, desired_course):
     all_in = False
     if constraint.target.get_id() == desired_course.get_id():
@@ -65,8 +65,10 @@ def member_counter(constraint, course_set):
     
 @attr.s
 class OneOfConstraint (Constraint):
-  target = attr.ib(type=S.Course)
-  course_set = attr.ib(type=typing.List[S.Course])
+  """To take a target course, a student must have taken 
+  at least one of the courses in the constraint sequence."""
+  target = attr.ib(type=CO.Course)
+  course_set = attr.ib(type=typing.List[CO.Course])
   def check(constraint, course_set, desired_course):
     if constraint.target.get_id() == desired_course.get_id():   
       return member_counter(constraint, course_set) == 1
@@ -75,8 +77,10 @@ class OneOfConstraint (Constraint):
 
 @attr.s
 class AnyOfConstraint (Constraint):
-  target = attr.ib(type=S.Course)
-  course_set = attr.ib(type=typing.List[S.Course])
+  """To take the target course, students must have taken any 
+  of the courses in the constraint sequence.""" 
+  target = attr.ib(type=CO.Course)
+  course_set = attr.ib(type=typing.List[CO.Course])
   def check(constraint, course_set, desired_course):
     if constraint.target.get_id() == desired_course.get_id():
       if not constraint.course_set:
@@ -88,6 +92,7 @@ class AnyOfConstraint (Constraint):
 
 @attr.s
 class AndConstraint (Constraint):
+  """Both constraints must be true."""
   lhs = attr.ib(type=Constraint)
   rhs = attr.ib(type=Constraint)
   def check(constraint, cs, desired):
@@ -95,6 +100,7 @@ class AndConstraint (Constraint):
 
 @attr.s
 class OrMapConstraint (Constraint):
+  """At least one of the constraints in the constraints array must be true."""
   constraints = attr.ib(type=typing.List[Constraint])
   def check (constraint, cs, desired):
     result = False

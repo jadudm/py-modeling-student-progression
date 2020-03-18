@@ -4,3 +4,5 @@ pytest
 sphinx
 rinohtype
 sphinx_rtd_theme
+hydra-core
+omegaconf
