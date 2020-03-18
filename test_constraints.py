@@ -73,17 +73,17 @@ def test_seq(st):
 # Make sure that the course set contains at least
 # one of the courses listed in the constraint.
 
-OC = NT('OC', ['target', 'sequence', 'cs', 'desired', 'expected'])
+SC = NT('OC', ['target', 'sequence', 'cs', 'desired', 'expected'])
 oocdata = [
-  OC(a_100, [], [], a_100, False),
-  OC(a_200, [a_100], [], a_200, False),
-  OC(a_200, [a_100], [a_100], a_200, True),
-  OC(a_300, [a_100, a_200], [a_100], a_300, True),
-  OC(a_300, [a_100, a_200], [a_200], a_300, True),
-  OC(a_300, [a_100, a_200], [a_400], a_300, False),
-  OC(a_300, [a_100, a_200], [a_300], a_300, False),
+  SC(a_100, [], [], a_100, False),
+  SC(a_200, [a_100], [], a_200, False),
+  SC(a_200, [a_100], [a_100], a_200, True),
+  SC(a_300, [a_100, a_200], [a_100], a_300, True),
+  SC(a_300, [a_100, a_200], [a_200], a_300, True),
+  SC(a_300, [a_100, a_200], [a_400], a_300, False),
+  SC(a_300, [a_100, a_200], [a_300], a_300, False),
   # Can only have one of the courses in the constraint set.
-  OC(a_300, [a_100, a_200], [a_100, a_200], a_300, False) 
+  SC(a_300, [a_100, a_200], [a_100, a_200], a_300, False) 
 ]
 
 @pytest.mark.parametrize("st", oocdata)
@@ -92,56 +92,18 @@ def test_ooc(st):
   result = C.interp(c, st.cs, st.desired)
   assert(result == st.expected)
 
-# aocdata = [
-#   (a_100, [], [], a_100, False),
-#   (a_100, [a_100], [], a_100, False),
-#   (a_100, [a_100], [a_100], a_100, True),
-#   (a_200, [a_100, a_200], [a_100], None, True),
-#   (a_300, [a_100, a_200], [a_300], None, False),
-#   # Must have *any* of the courses in the constraint set.
-#   (a_300, [a_100, a_200], [a_100, a_200], None, True) 
-# ]
+aocdata = [
+  SC(a_100, [], [], a_100, True),
+  SC(a_200, [a_100], [], a_200, False),
+  SC(a_200, [a_100, a_200], [a_100], a_200, True),
+  SC(a_300, [a_100, a_200], [a_100], a_300, True),
+  SC(a_400, [a_200, a_300], [a_100], a_400, False),
+  SC(a_400, [a_200, a_300], [a_200], a_400, True),
+  SC(a_300, [a_100, a_200], [a_100, a_200], a_300, True)
+]
 
-# @pytest.mark.parametrize("target, const,cs,desired,expected", aocdata)
-# def test_aoc(target, const, cs, desired, expected):
-#   c = C.AnyOfConstraint(const)
-#   result = C.interp(c, cs, desired)
-#   assert(result == expected)
-
-
-# locdata = [
-#   # (target, count, const_set, cs, desired, expected)
-#   (0, [], [], None, True),
-#   (1, [], [], None, True),
-#   (1, [a_100], [], None, True),
-#   (1, [a_100], [a_100], None, True),
-#   (1, [a_100, a_200], [a_100], None, True),
-#   (1, [a_100, a_200], [a_300], None, True),
-#   (2, [a_100, a_200], [a_100, a_200], None, True), 
-#   (1, [a_100, a_200], [a_100, a_200], None, False),
-#   (3, [a_100, a_200], [a_100, a_200], None, True), 
-# ]
-
-# @pytest.mark.parametrize("count,const_set,cs,desired,expected", locdata)
-# def test_loc(target, count, const_set, cs, desired, expected):
-#   c = C.LimitOfConstraint(count, const_set)
-#   result = C.interp(c, cs, desired)
-#   assert(result == expected)
-
-# # Exploring the "and" condition between conditionals.
-# def test_two():
-#   cs = [a_100]
-#   desired = a_200
-#   loc = C.LimitOfConstraint(1, cs).check(cs, desired)
-#   hclc = C.HasCourseLevelConstraint(200, 100).check(cs, desired)
-#   result = (loc and hclc)
-#   assert(result == True) 
-
-# def test_andc():
-#   cs = [a_100]
-#   desired = a_200
-#   loc = C.LimitOfConstraint(1, cs)
-#   hclc = C.HasCourseLevelConstraint(200, 100)
-#   ac = C.AndConstraint(loc, hclc)
-#   result = ac.check(cs, desired)
-#   assert(result == True)
+@pytest.mark.parametrize("st", aocdata)
+def test_aoc(st):
+  c = C.AnyOfConstraint(st.target, st.sequence)
+  result = C.interp(c, st.cs, st.desired)
+  assert(result == st.expected)

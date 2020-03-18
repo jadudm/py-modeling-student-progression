@@ -87,18 +87,6 @@ class AnyOfConstraint (Constraint):
       return False
 
 @attr.s
-class LimitOfConstraint (Constraint):
-  count = attr.ib(type=int)
-  target = attr.ib(type=S.Course)
-  course_set = attr.ib(type=typing.List[S.Course])
-  def check(constraint, course_set, desired_course):
-    members = member_counter(constraint, course_set)
-    if constraint.target.get_id() == desired_course.get_id():
-      return  members <= constraint.count
-    else:
-      return False
-
-@attr.s
 class AndConstraint (Constraint):
   lhs = attr.ib(type=Constraint)
   rhs = attr.ib(type=Constraint)
