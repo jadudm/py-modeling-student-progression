@@ -2,25 +2,31 @@ import attr
 import typing
 import structures as S
 
-# Constraints are essentially a language.
-# However, Python does not have a way to implement
-# languages *per se*, so I'll use structures
-# as a way to express an AST. Ultimately, I can add
-# a parser on the front-end to generate these structures.
-
 @attr.s
 class Constraint (object):
+  """A base class for course enrollment constraints."""
   def check(self, course_set, desired_course):
+    """Self-check constraints given a set of courses and a desired course.
+    
+    :param course_set: A list of Course objects that the student has previously taken.
+    :param desired_course: A Course object that represents the course a student wants to take.
+    """
     pass
 
 @attr.s
 class NoCourseLevelConstraint (Constraint):
+  """Courses at a given level have no constraints. 
+  E.g. 100-level courses can always be taken.
+  
+  Returns false if the desired course is not of the same level."""
   course_level = attr.ib(type=int)
   def check(constraint, course_set, desired_course):
     return (desired_course.level == constraint.course_level)
 
 @attr.s
 class HasCourseLevelConstraint (Constraint):
+  """Checks whether a student has taken a course in the past at the given level. For example,
+  to take a 200-level course, a student may need to have taken (any) 100-level course."""
   course_level   = attr.ib(type=int)
   required_level = attr.ib(type=int)
   def check(constraint, course_set, desired_course):
@@ -33,15 +39,20 @@ class HasCourseLevelConstraint (Constraint):
 
 @attr.s
 class SequenceConstraint (Constraint):
+  """To take the desired course, students must have taken all of the courses
+  in the sequence prior."""
+  target   = attr.ib(type=S.Course)
   sequence = attr.ib(type=typing.List[S.Course])
   def check(constraint, course_set, desired_course):
-    all_in = True
-    for constc in constraint.sequence:
-      constr_in_set = False
-      for setc in course_set:
-        if constc.get_id() == setc.get_id():
-          constr_in_set = True
-      all_in = all_in and constr_in_set
+    all_in = False
+    if constraint.target.get_id() == desired_course.get_id():
+      all_in = True
+      for constc in constraint.sequence:
+        constr_in_set = False
+        for setc in course_set:
+          if constc.get_id() == setc.get_id():
+            constr_in_set = True
+        all_in = all_in and constr_in_set
     return all_in
 
 def member_counter(constraint, course_set):

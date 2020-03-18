@@ -9,9 +9,10 @@ Welcome to Modeling Student Progression's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-
-
-
+   
+   background/rationale.rst
+   sources/constraints.rst
+   
 Indices and tables
 ==================
 

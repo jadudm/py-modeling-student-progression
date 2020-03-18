@@ -1,4 +1,5 @@
 import constraints as C
+from collections import namedtuple as NT
 import structures as S
 import pytest
 
@@ -51,52 +52,21 @@ def test_hclc3():
   assert(result)
 
 # Do I have a sequence of required courses?
-def test_seq1():
-  seqc = C.SequenceConstraint([S.Course(level=100)])
-  cs = []
-  desired = S.Course(level=200)
-  result = C.interp(seqc, cs, desired)
-  assert(not result)
+ST = NT('ST', ['target', 'sequence', 'cs', 'desired', 'expected'])
+seqdata = [
+  ST(a_100, [], [], a_100, True),
+  ST(a_200, [a_100], [], a_200, False),
+  ST(a_200, [a_100], [a_100], a_200, True),
+  ST(a_300, [a_100, a_200], [a_100], a_300, False),
+  ST(a_300, [a_100, a_200], [a_100, a_200], a_300, True),
+  ST(a_200, [S.Course(level=100, rubric="CS"), S.Course(level=200, rubric="LIT")], [a_100, a_200], a_200, False),
+]
 
-# If I do have a one-course sequence requirement
-def test_seq2():
-  seqc = C.SequenceConstraint([S.Course(level=100)])
-  cs = [S.Course(level=100)]
-  desired = S.Course(level=200)
-  result = C.interp(seqc, cs, desired)
-  assert(result)
-
-# But I don't have two...
-def test_seq3():
-  seqc = C.SequenceConstraint([S.Course(level=100), S.Course(level=200)])
-  cs = [S.Course(level=100)]
-  desired = S.Course(level=200)
-  result = C.interp(seqc, cs, desired)
-  assert(not result)
-
-# But I do have both courses!
-def test_seq4():
-  seqc = C.SequenceConstraint([S.Course(level=100), S.Course(level=200)])
-  cs = [S.Course(level=100), S.Course(level=200)]
-  desired = S.Course(level=200)
-  result = C.interp(seqc, cs, desired)
-  assert(result)
-
-# Testing subtlety of rubric...
-# I need a CS and LIT course, but I have two CS courses...
-# The previous tests used the default rubric. However,
-# The check uses .get_id(), so it builds an ID from the 
-# rubric and the level.
-def test_seq5():
-  seqc = C.SequenceConstraint([S.Course(level=100, rubric="CS"), 
-                               S.Course(level=200, rubric="LIT")])
-  cs = [S.Course(level=100, rubric="CS"), 
-        S.Course(level=200, rubric="CS")]
-  desired = S.Course(level=200)
-  result = C.interp(seqc, cs, desired)
-  assert(not result)
-
-# I like table testing. I should do that here.
+@pytest.mark.parametrize("st", seqdata)
+def test_seq(st):  
+  seqc = C.SequenceConstraint(st.target, st.sequence)
+  result = C.interp(seqc, st.cs, st.desired)
+  assert(result == st.expected)
 
 # OneOfConstraint
 # Make sure that the course set contains at least
