@@ -39,6 +39,11 @@ class LimitOfConstraint (Constraint):
   course_set = attr.ib(type=typing.List[S.Course])
 
 # Returns a boolean
+# Another way to do this would have been to allow
+# each object to have a .check(cs, desired) method.
+# Perhaps... hm. Perhaps that would have been better?
+# Dunno. TMTWWTDI. This will work better, I think, if I 
+# want to parse constraints in from a textual format.
 def interp(constraint, course_set, desired_course):
   # NoCourseLevelConstraint
   if isinstance(constraint, NoCourseLevelConstraint):
@@ -62,13 +67,37 @@ def interp(constraint, course_set, desired_course):
       all_in = all_in and constr_in_set
     return all_in
   elif isinstance(constraint, OneOfConstraint):
-    member = False
-    for c in course_set:
-      for cc in constraint.course_set:
-        if c.get_id() ==  cc.get_id():
-          member = True
-    return member
-
+    # If an empty set of courses is used as the constraint,
+    # then the student has one of them by definition.
+    if not constraint.course_set:
+      return True
+    else:
+      member = 0
+      for c in course_set:
+        for cc in constraint.course_set:
+          if c.get_id() ==  cc.get_id():
+            member = member + 1
+      return member == 1
+  elif isinstance(constraint, AnyOfConstraint):
+    if not constraint.course_set:
+      return True
+    else:
+      member = 0
+      for c in course_set:
+        for cc in constraint.course_set:
+          if c.get_id() ==  cc.get_id():
+            member = member + 1
+      return member > 0
+  elif isinstance(constraint, LimitOfConstraint):
+    if not constraint.course_set:
+      return True
+    else:
+      member = 0
+      for c in course_set:
+        for cc in constraint.course_set:
+          if c.get_id() ==  cc.get_id():
+            member = member + 1
+      return member >= constraint.count
   else:
     # If I find no reason to limit enrollment, then
     # it's OK based on the constraints.

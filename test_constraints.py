@@ -2,6 +2,10 @@ import constraints as C
 import structures as S
 import pytest
 
+a_100 = S.Course(level=100)
+a_200 = S.Course(level=200)
+a_300 = S.Course(level=300)
+
 # 100 level courses have no constraints.
 # A desired 100-level course should pass.
 def test_nclc1():
@@ -97,20 +101,57 @@ def test_seq5():
 # OneOfConstraint
 # Make sure that the course set contains at least
 # one of the courses listed in the constraint.
-a_100 = S.Course(level=100)
-a_200 = S.Course(level=200)
-a_300 = S.Course(level=300)
+
 oocdata = [
   # The desired course doesn't matter for these.
+  ([], [], None, True),
   ([a_100], [], None, False),
   ([a_100], [a_100], None, True),
   ([a_100, a_200], [a_100], None, True),
-  ([a_100, a_200], [a_300], None, False)
+  ([a_100, a_200], [a_300], None, False),
+  # Can only have one of the courses in the constraint set.
+  ([a_100, a_200], [a_100, a_200], None, False) 
 ]
 
 @pytest.mark.parametrize("const,cs,desired,expected", oocdata)
 def test_ooc(const, cs, desired, expected):
-  ooc = C.OneOfConstraint(const)
-  result = C.interp(ooc, cs, desired)
+  c = C.OneOfConstraint(const)
+  result = C.interp(c, cs, desired)
+  assert(result == expected)
+
+aocdata = [
+  # The desired course doesn't matter for these.
+  ([], [], None, True),
+  ([a_100], [], None, False),
+  ([a_100], [a_100], None, True),
+  ([a_100, a_200], [a_100], None, True),
+  ([a_100, a_200], [a_300], None, False),
+  # Must have *any* of the courses in the constraint set.
+  ([a_100, a_200], [a_100, a_200], None, True) 
+]
+
+@pytest.mark.parametrize("const,cs,desired,expected", aocdata)
+def test_aoc(const, cs, desired, expected):
+  c = C.AnyOfConstraint(const)
+  result = C.interp(c, cs, desired)
+  assert(result == expected)
+
+
+locdata = [
+  # The desired course doesn't matter for these.
+  (0, [], [], None, True),
+  (1, [a_100], [], None, False),
+  (1, [a_100], [a_100], None, True),
+  (1, [a_100, a_200], [a_100], None, True),
+  (1, [a_100, a_200], [a_300], None, False),
+  (2, [a_100, a_200], [a_100, a_200], None, True), 
+  (1, [a_100, a_200], [a_100, a_200], None, True),
+  (3, [a_100, a_200], [a_100, a_200], None, False), 
+]
+
+@pytest.mark.parametrize("count,const_set,cs,desired,expected", locdata)
+def test_loc(count, const_set, cs, desired, expected):
+  c = C.LimitOfConstraint(count, const_set)
+  result = C.interp(c, cs, desired)
   assert(result == expected)
 
