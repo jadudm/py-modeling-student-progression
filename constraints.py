@@ -65,24 +65,38 @@ def member_counter(constraint, course_set):
     
 @attr.s
 class OneOfConstraint (Constraint):
+  target = attr.ib(type=S.Course)
   course_set = attr.ib(type=typing.List[S.Course])
   def check(constraint, course_set, desired_course):
-    return member_counter(constraint, course_set) == 1
+    if constraint.target.get_id() == desired_course.get_id():   
+      return member_counter(constraint, course_set) == 1
+    else:
+      return False
 
 @attr.s
 class AnyOfConstraint (Constraint):
+  target = attr.ib(type=S.Course)
   course_set = attr.ib(type=typing.List[S.Course])
   def check(constraint, course_set, desired_course):
-    return member_counter(constraint, course_set) > 0
+    if constraint.target.get_id() == desired_course.get_id():
+      if not constraint.course_set:
+        return True
+      else:
+        return member_counter(constraint, course_set) > 0
+    else:
+      return False
 
 @attr.s
 class LimitOfConstraint (Constraint):
   count = attr.ib(type=int)
+  target = attr.ib(type=S.Course)
   course_set = attr.ib(type=typing.List[S.Course])
   def check(constraint, course_set, desired_course):
     members = member_counter(constraint, course_set)
-    print("{} <= {}".format(members, constraint.count))
-    return  members <= constraint.count
+    if constraint.target.get_id() == desired_course.get_id():
+      return  members <= constraint.count
+    else:
+      return False
 
 @attr.s
 class AndConstraint (Constraint):
