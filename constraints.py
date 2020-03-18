@@ -80,6 +80,15 @@ class AndConstraint (Constraint):
   def check(constraint, cs, desired):
     return constraint.lhs.check(cs, desired) and constraint.rhs.check(cs, desired)
 
+@attr.s
+class OrMapConstraint (Constraint):
+  constraints = attr.ib(type=typing.List[Constraint])
+  def check (constraint, cs, desired):
+    result = False
+    for c in constraint.constraints:
+      result = result or c.check(cs, desired)
+    return result
+
 # Returns a boolean
 # Another way to do this would have been to allow
 # each object to have a .check(cs, desired) method.

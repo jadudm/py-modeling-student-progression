@@ -157,6 +157,7 @@ def test_loc(count, const_set, cs, desired, expected):
   result = C.interp(c, cs, desired)
   assert(result == expected)
 
+# Exploring the "and" condition between conditionals.
 def test_two():
   cs = [a_100]
   desired = a_200
