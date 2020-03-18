@@ -104,7 +104,7 @@ def test_seq5():
 
 oocdata = [
   # The desired course doesn't matter for these.
-  ([], [], None, True),
+  ([], [], None, False),
   ([a_100], [], None, False),
   ([a_100], [a_100], None, True),
   ([a_100, a_200], [a_100], None, True),
@@ -121,7 +121,7 @@ def test_ooc(const, cs, desired, expected):
 
 aocdata = [
   # The desired course doesn't matter for these.
-  ([], [], None, True),
+  ([], [], None, False),
   ([a_100], [], None, False),
   ([a_100], [a_100], None, True),
   ([a_100, a_200], [a_100], None, True),
@@ -139,14 +139,16 @@ def test_aoc(const, cs, desired, expected):
 
 locdata = [
   # The desired course doesn't matter for these.
+  # (count, const_set, cs, desired, expected)
   (0, [], [], None, True),
-  (1, [a_100], [], None, False),
+  (1, [], [], None, True),
+  (1, [a_100], [], None, True),
   (1, [a_100], [a_100], None, True),
   (1, [a_100, a_200], [a_100], None, True),
-  (1, [a_100, a_200], [a_300], None, False),
+  (1, [a_100, a_200], [a_300], None, True),
   (2, [a_100, a_200], [a_100, a_200], None, True), 
-  (1, [a_100, a_200], [a_100, a_200], None, True),
-  (3, [a_100, a_200], [a_100, a_200], None, False), 
+  (1, [a_100, a_200], [a_100, a_200], None, False),
+  (3, [a_100, a_200], [a_100, a_200], None, True), 
 ]
 
 @pytest.mark.parametrize("count,const_set,cs,desired,expected", locdata)
@@ -155,3 +157,19 @@ def test_loc(count, const_set, cs, desired, expected):
   result = C.interp(c, cs, desired)
   assert(result == expected)
 
+def test_two():
+  cs = [a_100]
+  desired = a_200
+  loc = C.LimitOfConstraint(1, cs).check(cs, desired)
+  hclc = C.HasCourseLevelConstraint(200, 100).check(cs, desired)
+  result = (loc and hclc)
+  assert(result == True) 
+
+def test_andc():
+  cs = [a_100]
+  desired = a_200
+  loc = C.LimitOfConstraint(1, cs)
+  hclc = C.HasCourseLevelConstraint(200, 100)
+  ac = C.AndConstraint(loc, hclc)
+  result = ac.check(cs, desired)
+  assert(result == True)

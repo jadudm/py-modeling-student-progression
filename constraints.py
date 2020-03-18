@@ -45,15 +45,12 @@ class SequenceConstraint (Constraint):
     return all_in
 
 def member_counter(constraint, course_set):
-  if not constraint.course_set:
-    return True
-  else:
-    member = 0
-    for c in course_set:
-      for cc in constraint.course_set:
-        if c.get_id() ==  cc.get_id():
-          member = member + 1
-    return member
+  member = 0
+  for c in course_set:
+    for cc in constraint.course_set:
+      if c.get_id() ==  cc.get_id():
+        member = member + 1
+  return member
     
 @attr.s
 class OneOfConstraint (Constraint):
@@ -72,7 +69,16 @@ class LimitOfConstraint (Constraint):
   count = attr.ib(type=int)
   course_set = attr.ib(type=typing.List[S.Course])
   def check(constraint, course_set, desired_course):
-    return member_counter(constraint, course_set) >= constraint.count
+    members = member_counter(constraint, course_set)
+    print("{} <= {}".format(members, constraint.count))
+    return  members <= constraint.count
+
+@attr.s
+class AndConstraint (Constraint):
+  lhs = attr.ib(type=Constraint)
+  rhs = attr.ib(type=Constraint)
+  def check(constraint, cs, desired):
+    return constraint.lhs.check(cs, desired) and constraint.rhs.check(cs, desired)
 
 # Returns a boolean
 # Another way to do this would have been to allow
